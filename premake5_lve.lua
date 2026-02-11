@@ -17,7 +17,7 @@ project "lve"
 --	pchsource "pch.cpp"
 
 	files {
---		"premake5_lve.lua",
+		"premake5_lve.lua",
 		"source/**.c",
 		"source/**.cpp",
 		"source/**.h",
@@ -47,11 +47,11 @@ project "lve"
 	filter { "system:windows", "files:**.glsl" }
 		buildmessage "Compiling %{file.name} -> %{file.basename}.spv"
 		buildcommands {
-			"\"%{(os.getenv('VULKAN_SDK') .. '/Bin/glslangValidator.exe')}\" -V \"%{file.relpath}\" -o \"%{(cfg.buildtarget.directory .. '/assets/shaders/vulkan/' .. file.basename)}.spv\"",
+			"\"%{(os.getenv('VULKAN_SDK') .. '/Bin/glslangValidator.exe')}\" -V \"%{file.relpath}\" -o \"%{(cfg.buildtarget.directory .. '/shaders/' .. file.basename)}.spv\"",
 			-- glslangValidator.exe leaves *.spv files in the working directory
 			"del *.spv",
 		}
 		buildoutputs {
-			"%{(cfg.buildtarget.directory .. '/assets/shaders/vulkan/' .. file.basename)}.spv",
+			"%{(cfg.buildtarget.directory .. '/shaders/' .. file.basename)}.spv",
 		}
 	filter {}
