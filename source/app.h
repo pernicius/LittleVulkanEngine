@@ -8,8 +8,9 @@ namespace lve {
 	class App
 	{
 	public:
-//		App();
-//		~App();
+		App();
+		~App();
+
 		void Run();
 
 	private:
