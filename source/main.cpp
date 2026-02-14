@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
 		std::filesystem::path exePath = std::filesystem::absolute(argv[0]);
 		std::filesystem::current_path(exePath.parent_path());
 		LOG_INFO("Current working directory changed to:");
-		LOG_INFO("     '" << std::filesystem::current_path().string() << "'");
+		LOG("'" << std::filesystem::current_path().string() << "'");
 	}
 
 	lve::App app{};

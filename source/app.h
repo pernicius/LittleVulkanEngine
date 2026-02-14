@@ -1,7 +1,8 @@
 #pragma once
 
-#include "lve_window.h"
+#include "lve_device.h"
 #include "lve_pipeline.h"
+#include "lve_window.h"
 
 namespace lve {
 
@@ -19,7 +20,12 @@ namespace lve {
 		static constexpr int HEIGHT = 600;
 
 		LveWindow m_window{ WIDTH, HEIGHT, "Hello Vulkan!" };
-		LvePipeline m_pipeline{"shaders/simple_shader.vert.spv", "shaders/simple_shader.frag.spv"};
+		LveDevice m_lveDevice{ m_window };
+		LvePipeline m_lvePipeline{
+			m_lveDevice,
+			"shaders/simple_shader.vert.spv",
+			"shaders/simple_shader.frag.spv",
+			LvePipeline::DefaultPipelineConfigInfo(WIDTH, HEIGHT) };
 
 	};
 

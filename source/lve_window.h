@@ -21,6 +21,8 @@ namespace lve {
 		bool ShouldClose() { return glfwWindowShouldClose(m_window); }
 		GLFWwindow* GetGLFWwindow() const { return m_window; }
 
+		void CreateWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
+
 	private:
 		void InitWindow();
 
