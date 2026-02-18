@@ -6,7 +6,6 @@
 #include <cstring>
 #include <iostream>
 #include <set>
-#include <unordered_set>
 
 namespace lve {
 
@@ -197,11 +196,24 @@ namespace lve {
 		createInfo.pQueueCreateInfos = queueCreateInfos.data();
 
 		createInfo.pEnabledFeatures = &deviceFeatures;
-		createInfo.enabledExtensionCount = static_cast<uint32_t>(m_deviceExtensions.size());
-		createInfo.ppEnabledExtensionNames = m_deviceExtensions.data();
 
-		// might not really be necessary anymore because device specific validation layers
-		// have been deprecated
+		VkPhysicalDevicePresentModeFifoLatestReadyFeaturesEXT fifoLatest = {};
+		fifoLatest.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_MODE_FIFO_LATEST_READY_FEATURES_KHR;
+		fifoLatest.presentModeFifoLatestReady = VK_TRUE;
+		if (IsExtensionEnabled(VK_KHR_PRESENT_MODE_FIFO_LATEST_READY_EXTENSION_NAME)) {
+			void* pNext((void*)createInfo.pNext);
+			fifoLatest.pNext = pNext;
+			createInfo.pNext = &fifoLatest;
+		}
+
+		std::vector<const char*> extensions{};
+		for (const auto& e : m_deviceExtensionsEnabled) {
+			extensions.push_back(e.c_str());
+		}
+		createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
+		createInfo.ppEnabledExtensionNames = extensions.data();
+
+		// might not really be necessary anymore because device specific validation layers have been deprecated
 		if (m_enableValidationLayers) {
 			createInfo.enabledLayerCount = static_cast<uint32_t>(m_validationLayers.size());
 			createInfo.ppEnabledLayerNames = m_validationLayers.data();
@@ -258,7 +270,9 @@ namespace lve {
 		VkPhysicalDeviceFeatures supportedFeatures;
 		vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
 
-		return indices.isComplete() && extensionsSupported && swapChainAdequate &&
+		return indices.isComplete() &&
+			extensionsSupported &&
+			swapChainAdequate &&
 			supportedFeatures.samplerAnisotropy;
 	}
 
@@ -368,22 +382,40 @@ namespace lve {
 		LOG_VULKAN("Available device extensions: " << extensionCount);
 
 		std::vector<VkExtensionProperties> availableExtensions(extensionCount);
-		vkEnumerateDeviceExtensionProperties(
-			device,
-			nullptr,
-			&extensionCount,
-			availableExtensions.data());
+		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
 
-		std::set<std::string> requiredExtensions(m_deviceExtensions.begin(), m_deviceExtensions.end());
-
-		LOG_VULKAN("Required device extensions:");
-		for (const auto& extension : availableExtensions) {
-			if (requiredExtensions.contains(extension.extensionName))
-				LOG(extension.extensionName);
-			requiredExtensions.erase(extension.extensionName);
+		std::unordered_set<std::string> available;
+		for (const auto& ext : availableExtensions) {
+			available.insert(ext.extensionName);
 		}
 
-		return requiredExtensions.empty();
+//		for (const auto& extension : availableExtensions) {
+//			LOG(extension.extensionName);
+//		}
+
+		m_deviceExtensionsEnabled.clear();
+
+		std::unordered_set<std::string> required(m_deviceExtensionsRequired);
+		LOG_VULKAN("Required device extensions:");
+		for (const auto& extension : available) {
+			if (required.contains(extension)) {
+				LOG(extension);
+				m_deviceExtensionsEnabled.insert(extension);
+			}
+			required.erase(extension);
+		}
+
+		std::unordered_set<std::string> optional(m_deviceExtensionsOptional);
+		LOG_VULKAN("Optional device extensions:");
+		for (const auto& extension : available) {
+			if (optional.contains(extension)) {
+				LOG(extension);
+				m_deviceExtensionsEnabled.insert(extension);
+			}
+			optional.erase(extension);
+		}
+
+		return required.empty();
 	}
 
 

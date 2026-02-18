@@ -20,6 +20,7 @@ namespace lve {
 		
 		bool ShouldClose() { return glfwWindowShouldClose(m_window); }
 		GLFWwindow* GetGLFWwindow() const { return m_window; }
+		VkExtent2D GetExtent() { return { static_cast<uint32_t>(m_width), static_cast<uint32_t>(m_height) }; }
 
 		void CreateWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
 
