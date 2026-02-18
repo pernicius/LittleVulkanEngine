@@ -18,7 +18,11 @@ int main(int argc, char* argv[])
 		LOG("'" << std::filesystem::current_path().string() << "'");
 	}
 
+	LOG_INFO("----------[ INITIALIZATION ]----------");
+
 	lve::App app{};
+
+	LOG_INFO("----------[ RUN-LOOP ]----------");
 
 	try {
 		app.Run();
@@ -27,6 +31,8 @@ int main(int argc, char* argv[])
 		std::cerr << "ERROR: " << e.what() << std::endl;
 		return EXIT_FAILURE;
 	}
+
+	LOG_INFO("----------[ CLEANUP ]----------");
 
 	return EXIT_SUCCESS;
 }

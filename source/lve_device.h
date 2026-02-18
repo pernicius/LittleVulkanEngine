@@ -2,6 +2,7 @@
 
 #include "lve_window.h"
 
+#include <unordered_set>
 #include <string>
 #include <vector>
 
@@ -63,14 +64,11 @@ namespace lve {
 		VkCommandBuffer BeginSingleTimeCommands();
 		void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-		void CopyBufferToImage(
-			VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layerCount);
+		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layerCount);
 
-		void CreateImageWithInfo(
-			const VkImageCreateInfo& imageInfo,
-			VkMemoryPropertyFlags properties,
-			VkImage& image,
-			VkDeviceMemory& imageMemory);
+		void CreateImageWithInfo(const VkImageCreateInfo& imageInfo, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+
+		bool IsExtensionEnabled(const std::string e) { return m_deviceExtensionsEnabled.contains(e); }
 
 		VkPhysicalDeviceProperties m_properties;
 
@@ -104,7 +102,11 @@ namespace lve {
 		VkQueue m_presentQueue;
 
 		const std::vector<const char*> m_validationLayers = { "VK_LAYER_KHRONOS_validation" };
-		const std::vector<const char*> m_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+		std::unordered_set<std::string> m_deviceExtensionsRequired = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+		std::unordered_set<std::string> m_deviceExtensionsOptional = {
+			VK_KHR_PRESENT_MODE_FIFO_LATEST_READY_EXTENSION_NAME,
+		};
+		std::unordered_set<std::string> m_deviceExtensionsEnabled;
 	};
 
 
