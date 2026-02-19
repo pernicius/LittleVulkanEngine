@@ -33,6 +33,7 @@ namespace lve {
 
 		while (!m_lveWindow.ShouldClose()) {
 			glfwPollEvents();
+			DrawFrame();
 		}
 		vkDeviceWaitIdle(m_lveDevice.Device());
 		

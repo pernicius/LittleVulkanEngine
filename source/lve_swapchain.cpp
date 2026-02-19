@@ -51,7 +51,7 @@ namespace lve {
 		vkDestroyRenderPass(m_device.Device(), m_renderPass, nullptr);
 
 		// cleanup synchronization objects
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		for (size_t i = 0; i < ImageCount(); i++) {
 			vkDestroySemaphore(m_device.Device(), m_renderFinishedSemaphores[i], nullptr);
 			vkDestroySemaphore(m_device.Device(), m_imageAvailableSemaphores[i], nullptr);
 			vkDestroyFence(m_device.Device(), m_inFlightFences[i], nullptr);
@@ -91,7 +91,7 @@ namespace lve {
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = buffers;
 
-		VkSemaphore signalSemaphores[] = { m_renderFinishedSemaphores[m_currentFrame] };
+		VkSemaphore signalSemaphores[] = { m_renderFinishedSemaphores[*imageIndex] };
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = signalSemaphores;
 
@@ -114,7 +114,7 @@ namespace lve {
 
 		auto result = vkQueuePresentKHR(m_device.PresentQueue(), &presentInfo);
 
-		m_currentFrame = (m_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+		m_currentFrame = (m_currentFrame + 1) % ImageCount();
 
 		return result;
 	}
@@ -129,8 +129,7 @@ namespace lve {
 		VkExtent2D extent = ChooseSwapExtent(swapChainSupport.capabilities);
 
 		uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
-		if (swapChainSupport.capabilities.maxImageCount > 0 &&
-			imageCount > swapChainSupport.capabilities.maxImageCount) {
+		if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
 			imageCount = swapChainSupport.capabilities.maxImageCount;
 		}
 
@@ -186,8 +185,8 @@ namespace lve {
 
 	void LveSwapChain::CreateImageViews()
 	{
-		m_swapChainImageViews.resize(m_swapChainImages.size());
-		for (size_t i = 0; i < m_swapChainImages.size(); i++) {
+		m_swapChainImageViews.resize(ImageCount());
+		for (size_t i = 0; i < ImageCount(); i++) {
 			VkImageViewCreateInfo viewInfo{};
 			viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 			viewInfo.image = m_swapChainImages[i];
@@ -338,9 +337,9 @@ namespace lve {
 
 	void LveSwapChain::CreateSyncObjects()
 	{
-		m_imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-		m_renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-		m_inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+		m_imageAvailableSemaphores.resize(ImageCount());
+		m_renderFinishedSemaphores.resize(ImageCount());
+		m_inFlightFences.resize(ImageCount());
 		m_imagesInFlight.resize(ImageCount(), VK_NULL_HANDLE);
 
 		VkSemaphoreCreateInfo semaphoreInfo = {};
@@ -350,7 +349,7 @@ namespace lve {
 		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		for (size_t i = 0; i < ImageCount(); i++) {
 			if (vkCreateSemaphore(m_device.Device(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]) != VK_SUCCESS ||
 				vkCreateSemaphore(m_device.Device(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]) != VK_SUCCESS ||
 				vkCreateFence(m_device.Device(), &fenceInfo, nullptr, &m_inFlightFences[i]) != VK_SUCCESS) {
